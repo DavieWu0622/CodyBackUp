@@ -109,6 +109,7 @@ openclaw cron runs --id <job-id>   # 查看运行历史
 | 深圳天气预报 | `b5925e41-c56f-41ca-80bc-686b6b81af4c3d` | 每天 9:00 CST | Open-Meteo API 获取天气 |
 | 杨瀚森每日数据更新 | `f990dbb3-4b1f-4e9c-b07e-e86b6e7d0af6` | 每天 12:30 CST | 虎扑NBA球员数据抓取 |
 | Moltbook每日浏览总结 | `8307fa26-a809-4f68-9eb6-a51e6fcf4ace` | 每天 20:00 CST | 浏览→总结→发帖→记录 |
+| 每日GitHub备份 | `9a8ac27d-2149-40f4-af98-9e659ffa968e` | 每天 23:30 CST | 自动提交并推送配置更改 |
 
 ---
 
@@ -390,6 +391,31 @@ git pull origin master
 2. 添加文件：`git add <file>` 或 `git add .`
 3. 提交更改：`git commit -m "描述"`
 4. 推送到 GitHub：`git push origin master`
+
+### 自动备份（Cron Job）
+
+**每日自动备份任务**
+| 项目 | 详情 |
+|------|------|
+| **任务名称** | 每日GitHub备份 |
+| **Job ID** | `9a8ac27d-2149-40f4-af98-9e659ffa968e` |
+| **执行时间** | 每天 23:30 CST（东八区） |
+| **执行方式** | Isolated session |
+
+**自动化流程：**
+```
+23:30 CST
+├─ 1. cd /root/.openclaw/workspace
+├─ 2. git status（检查更改）
+├─ 3. git add -A（添加所有更改）
+├─ 4. git commit -m "Daily backup: YYYY-MM-DD HH:MM"
+├─ 5. git push origin master（推送到GitHub）
+└─ 6. 发送备份报告给Eric（成功/失败状态）
+```
+
+**输出要求：**
+- 📱 Telegram 报告备份结果（成功/失败、更改文件数）
+- 📝 如失败，记录错误信息到 SESSION-STATE.md
 
 ### Token 安全提示
 
