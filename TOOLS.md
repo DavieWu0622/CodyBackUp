@@ -436,4 +436,86 @@ git pull origin master
 
 ---
 
+## 🎬 YouTube 视频下载工作流
+
+### 工具依赖
+
+**已安装工具：**
+- **yt-dlp** — YouTube 视频下载工具（最新版）
+- **Deno** — JavaScript 运行时（解决 YouTube JS 挑战）
+- **FFmpeg** — 视频格式转换和修复
+
+### 下载流程
+
+**步骤 1：获取 YouTube Cookie**
+- 浏览器登录 YouTube
+- 使用 "Get cookies.txt" 扩展导出 Cookie
+- 将 Cookie 文件内容发送给我
+
+**步骤 2：下载视频**
+```bash
+# 保存 Cookie 文件
+cat > /tmp/youtube_cookies.txt << 'EOF'
+# Netscape HTTP Cookie File
+[粘贴 Cookie 内容]
+EOF
+
+# 下载视频
+yt-dlp "https://youtube.com/shorts/VIDEO_ID" \
+  --cookies /tmp/youtube_cookies.txt \
+  -o "youtube_video_%(id)s.%(ext)s" \
+  --format "best[height<=1080]"
+```
+
+**步骤 3：修复视频格式**
+```bash
+# 使用 FFmpeg 重新封装（解决 MPEG-TS 问题）
+ffmpeg -i input.mp4 -c copy output_fixed.mp4 -y
+```
+
+**步骤 4：清理**
+- 删除 Cookie 文件（安全）
+- 删除临时文件
+- 移动最终视频到 workspace
+
+### 成功下载记录
+
+| 视频 | 平台 | 大小 | 时长 | 状态 |
+|------|------|------|------|------|
+| SHANK - レットイットゴー | YouTube Shorts | 4.6 MB | 58.8s | ✅ 成功 |
+| Aimyon - Rock in Japan 2023 | YouTube Shorts | 4.2 MB | 34.8s | ✅ 成功 |
+
+### 注意事项
+
+⚠️ **Cookie 安全**
+- Cookie 有效期短，需及时使用
+- 下载完成后立即删除 Cookie 文件
+- 不要重复使用旧 Cookie（会被 YouTube 轮换）
+
+⚠️ **下载限制**
+- 服务器 IP 可能被 YouTube 限制
+- 部分视频需要登录后才能下载
+- 版权保护视频无法下载
+
+### 抖音文案模板
+
+**格式参考：**
+```
+[日文歌名][emoji] [歌手名]这首太[形容词]了！
+
+[现场感受描述][emoji]
+[情感共鸣描述]
+
+🎵 [歌手名] - [歌曲信息]
+
+#[歌手英文名] #[中文标签] #[风格标签] #[场景标签]
+```
+
+**标签规范：**
+- 歌手名用 **英文名**（如 Aimyon、SHANK）
+- 避免纯日文标签（抖音内地无法关联）
+- 混合中英文标签效果更好
+
+---
+
 *最后更新: 2026-02-27*
