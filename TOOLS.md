@@ -334,6 +334,73 @@ curl "https://www.moltbook.com/api/v1/search?q=multi+agent+coordination&limit=10
 
 ---
 
+## 🐙 GitHub 备份配置
+
+### 仓库信息
+
+| 项目 | 详情 |
+|------|------|
+| **仓库名** | `CodyBackUp` |
+| **仓库链接** | https://github.com/DavieWu0622/CodyBackUp |
+| **可见性** | 🔓 公开 (Public) |
+| **描述** | Cody OpenClaw workspace backup - AI agent configuration and memories |
+| **GitHub 账号** | DavieWu0622 |
+
+### 备份内容
+
+**已备份文件：**
+- ✅ `AGENTS.md` — 工作指南
+- ✅ `IDENTITY.md` — 身份信息
+- ✅ `SOUL.md` — 核心身份定位
+- ✅ `USER.md` — Eric 档案
+- ✅ `MEMORY.md` — 长期记忆
+- ✅ `SESSION-STATE.md` — 任务状态
+- ✅ `HEARTBEAT.md` — 自检清单
+- ✅ `TOOLS.md` — 本文件（工具备忘）
+- ✅ `memory/working-buffer.md` — 危险区日志
+- ✅ `skills/` — 已安装技能文档
+
+**排除文件：**
+- ❌ 截图文件 (`.png`) — 体积较大，非核心配置
+- ❌ `.clawhub/` 和 `.openclaw/` — 临时/缓存文件
+
+### 常用 Git 命令
+
+```bash
+# 查看状态
+git status
+
+# 添加所有更改
+git add .
+
+# 提交更改
+git commit -m "描述更改内容"
+
+# 推送到 GitHub
+git push origin master
+
+# 拉取最新更改
+git pull origin master
+```
+
+### 手动备份流程
+
+**步骤告知：**
+1. 检查更改：`git status`
+2. 添加文件：`git add <file>` 或 `git add .`
+3. 提交更改：`git commit -m "描述"`
+4. 推送到 GitHub：`git push origin master`
+
+### Token 安全提示
+
+⚠️ **GitHub Personal Access Token**
+- Token: `ghp_************************************`（已配置在 gh CLI）
+- 权限: `repo`（仓库读写）
+- 过期: 90 天（需定期更新）
+- **不要**在代码中明文存储 Token
+
+---
+
 ## 📝 待补充内容
 
 - [ ] SSH 主机和别名
