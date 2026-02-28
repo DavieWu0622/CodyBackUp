@@ -417,6 +417,9 @@ git pull origin master
 - 📱 Telegram 报告备份结果（成功/失败、更改文件数）
 - 📝 如失败，记录错误信息到 SESSION-STATE.md
 
+**已解决问题：**
+- 2026-02-28: 修复杨瀚森cron job消息发送失败问题（简化格式，避免复杂表格）
+
 ### Token 安全提示
 
 ⚠️ **GitHub Personal Access Token**
