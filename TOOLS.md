@@ -140,6 +140,81 @@ curl -s "https://api.open-meteo.com/v1/forecast?\
 
 ---
 
+## 🔍 Tavily 搜索配置
+
+### API Key
+```
+TAVILY_API_KEY=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
+```
+
+### 使用约定
+**⚠️ 使用规则：需要用户明确声明后才使用 Tavily**
+- 默认使用内置 `web_search` 进行网页搜索
+- 当用户说"用tavily搜索"、"tavily查一下"等明确指令时，才使用 Tavily
+- Tavily 优势：结果更精简、更省 token、AI 优化输出
+
+**使用场景对比：**
+| 场景 | 推荐工具 | 原因 |
+|-----|---------|-----|
+| 普通信息查询（默认） | **内置 web_search** | 零配置，随叫随到 |
+| 用户明确要求用 Tavily | **Tavily** ✅ | 结果精炼，省 token |
+| 深度研究/写报告 | **Tavily --deep** ✅ | 多角度综合信息 |
+| 需要截图/页面交互 | Agent Browser | 可视化操作 |
+| 特定页面数据抓取 | Agent Browser | 精确提取结构化数据 |
+
+### Tavily 输出格式约定
+
+**新闻类搜索结果格式（标准模板）：**
+
+```
+## 📰 [主题]最新消息（Tavily 搜索）
+
+### 🔥 [分类标题]
+
+**1. [子主题]**
+- [新闻内容/要点] - [来源名称](URL)
+- [新闻内容/要点] - [来源名称](URL)
+
+**2. [子主题]**
+- [新闻内容/要点] - [来源名称](URL)
+
+### 🛡️ [另一分类]
+
+- [新闻内容] - [来源名称](URL)
+- [多个来源同一新闻] - [来源A](URL) | [来源B](URL)
+```
+
+**格式规则：**
+1. **每条新闻独立成条**，以 `-` 开头
+2. **URL 直接附在内容后**，使用 `[来源名](URL)` 格式
+3. **同一新闻多个来源**用 `|` 分隔：`- [Haaretz](URL) | [Jerusalem Post](URL)`
+4. **分类清晰**：用 emoji + 标题区分不同板块
+5. **层次分明**：用数字序号区分不同子主题
+
+**实际示例（伊朗局势）：**
+```
+### 🔥 当前局势概览
+
+**1. 美伊紧张升级**
+- 特朗普坚持要求伊朗放弃核浓缩活动... - [New York Post](https://nypost.com/...)
+- 美国向该地区大规模部署海军力量
+
+**2. 以色列动向**
+- 以色列已与美国协调对伊朗发动攻击... - [Haaretz](https://www.haaretz.com/...)
+- 德黑兰权力格局变动... - [Iran International](https://www.iranintl.com/...)
+
+### 🛡️ 军备动态
+
+- 伊朗接近与中国达成超音速反舰导弹协议... - [Haaretz](URL) | [The Jerusalem Post](URL)
+```
+
+**通用资讯搜索格式：**
+- 搜索结果以列表形式呈现
+- 每个要点后附 `[来源](URL)`
+- 如有摘要/总结，放在最前面
+
+---
+
 ## 🌐 Agent Browser 网页数据抓取
 
 ### 已配置定时任务
@@ -439,7 +514,7 @@ git pull origin master
 
 ---
 
-## 🎬 YouTube 视频下载工作流
+## 🎬 YouTube 视频下载 + 抖音文案工作流
 
 ### 工具依赖
 
@@ -448,14 +523,14 @@ git pull origin master
 - **Deno** — JavaScript 运行时（解决 YouTube JS 挑战）
 - **FFmpeg** — 视频格式转换和修复
 
-### 下载流程
+### 完整工作流程
 
-**步骤 1：获取 YouTube Cookie**
+**Step 1: 获取 YouTube Cookie**
 - 浏览器登录 YouTube
 - 使用 "Get cookies.txt" 扩展导出 Cookie
 - 将 Cookie 文件内容发送给我
 
-**步骤 2：下载视频**
+**Step 2: 下载视频**
 ```bash
 # 保存 Cookie 文件
 cat > /tmp/youtube_cookies.txt << 'EOF'
@@ -468,112 +543,63 @@ yt-dlp "https://youtube.com/shorts/VIDEO_ID" \
   --cookies /tmp/youtube_cookies.txt \
   -o "youtube_video_%(id)s.%(ext)s" \
   --format "best[height<=1080]"
-```
 
-**步骤 3：修复视频格式**
-```bash
-# 使用 FFmpeg 重新封装（解决 MPEG-TS 问题）
+# 修复视频格式（解决 MPEG-TS 问题）
 ffmpeg -i input.mp4 -c copy output_fixed.mp4 -y
 ```
 
-**步骤 4：清理**
-- 删除 Cookie 文件（安全）
-- 删除临时文件
-- 移动最终视频到 workspace
-
-### 成功下载记录
-
-| 视频 | 平台 | 大小 | 时长 | 状态 |
-|------|------|------|------|------|
-| SHANK - レットイットゴー | YouTube Shorts | 4.6 MB | 58.8s | ✅ 成功 |
-| Aimyon - Rock in Japan 2023 | YouTube Shorts | 4.2 MB | 34.8s | ✅ 成功 |
-
-### 注意事项
-
-⚠️ **Cookie 安全**
-- Cookie 有效期短，需及时使用
-- 下载完成后立即删除 Cookie 文件
-- 不要重复使用旧 Cookie（会被 YouTube 轮换）
-
-⚠️ **下载限制**
-- 服务器 IP 可能被 YouTube 限制
-- 部分视频需要登录后才能下载
-- 版权保护视频无法下载
-
-### 抖音文案模板
-
-**格式参考：**
+**Step 3: 内容识别（使用 Summarize）**
+```bash
+# 使用 summarize 分析 YouTube 视频内容
+summarize "YOUTUBE_URL" --youtube auto --length medium
 ```
-[日文歌名][emoji] [歌手名]这首太[形容词]了！
+
+**Summarize 返回信息：**
+- 🎵 **歌曲标题** + **歌手名**
+- 📝 **歌词主题/情感**（热血、治愈、伤感等）
+- 🎬 **视频场景**（现场版、MV、翻唱等）
+- 🎸 **音乐风格**（摇滚、民谣、流行等）
+
+**Step 4: 生成抖音文案**
+
+基于 Summarize 分析结果，匹配文案风格：
+
+| 内容类型 | 文案风格 | 推荐标签 |
+|---------|---------|---------|
+| 热血摇滚 | 激情、燃、炸裂 | #摇滚 #热血 #现场版 |
+| 治愈民谣 | 温柔、感动、沉浸 | #治愈系 #温柔 #日文歌 |
+| 音乐现场 | 氛围感、沉浸 | #现场版 #Live #音乐分享 |
+
+**文案模板：**
+```
+[日文/英文歌名][emoji] [歌手名]这首太[形容词]了！
 
 [现场感受描述][emoji]
 [情感共鸣描述]
 
 🎵 [歌手名] - [歌曲信息]
 
-#[歌手英文名] #[中文标签] #[风格标签] #[场景标签]
-```
-
-**标签规范：**
-- 歌手名用 **英文名**（如 Aimyon、SHANK）
-- 避免纯日文标签（抖音内地无法关联）
-- 混合中英文标签效果更好
-
----
-
-## 🎬 YouTube 视频下载 + 抖音文案工作流
-
-### 完整流程
-
-**Step 1: 获取 Cookie**
-- 用户导出 YouTube Cookie 并发送给我
-- 保存到临时文件（使用后立即删除）
-
-**Step 2: 下载视频**
-```bash
-yt-dlp "URL" --cookies /tmp/cookies.txt -o "video.mp4"
-ffmpeg -i video.mp4 -c copy video_fixed.mp4
-```
-
-**Step 3: 内容识别**
-- 使用 agent-browser 打开 YouTube 页面
-- 截图识别视频标题、频道、内容类型
-- 关闭浏览器
-
-**Step 4: 生成文案**
-根据视频内容类型生成抖音文案：
-
-| 内容类型 | 文案风格 | 标签 |
-|---------|---------|------|
-| 热血摇滚 | 激情、燃、炸裂 | #摇滚 #热血 #现场版 |
-| 治愈民谣 | 温柔、感动、沉浸 | #治愈系 #温柔 #日文歌 |
-| 音乐现场 | 氛围感、沉浸 | #现场版 #Live #音乐分享 |
-
-**文案格式：**
-```
-[日文/英文歌名][emoji] [一句话感受]
-
-[详细描述][emoji]
-[情感共鸣]
-
 @频道名 的来源
-#[歌手名] #[中文标签] #[风格] #[场景]
+#[歌手英文名] #[中文标签] #[风格] #[场景]
 ```
 
 **标签规范：**
 - 歌手名用 **英文名**（抖音内地可关联）
-- 避免纯日文标签
 - 5个标签：歌手 + 语言 + 风格 + 场景 + 泛标签
+- **Tag 翻译规则**：日文或非英文/中文的文字，翻译成英文或中文
+  - 例：#あいみょん → #Aimyon 或 #爱缪
+  - 例：#打上花火 → #DAOKO 或 #打上花火DAOKO
 
-**Step 5: 发送给用户**
-- 视频文件
-- 配套文案
-- 5个推荐标签
+**Step 5: 发送给用户（一并发送）**
+```
+📹 视频文件
+📝 配套文案  
+🏷️ 5个推荐标签（已翻译）
+```
 
 **Step 6: 清理**
-- 删除 Cookie 文件
-- 删除临时视频文件
-- 保留最终视频在 workspace
+- 删除 Cookie 文件（安全）
+- 删除临时文件
 
 ### 已下载视频记录
 
@@ -586,9 +612,9 @@ ffmpeg -i video.mp4 -c copy video_fixed.mp4
 ### 安全提醒
 
 ⚠️ **Cookie 安全**
+- Cookie 有效期短，需及时使用
 - 每次下载后立即删除 Cookie 文件
 - 不重复使用旧 Cookie（YouTube 会轮换）
-- 用户需重新导出新鲜 Cookie
 
 ⚠️ **版权限制**
 - 部分视频因版权（如 WMG）无法下载
@@ -596,4 +622,107 @@ ffmpeg -i video.mp4 -c copy video_fixed.mp4
 
 ---
 
-*最后更新: 2026-02-28*
+## ⚠️ YouTube 下载限制（重要）
+
+### 问题描述
+**服务器 IP 被 YouTube 列入黑名单**
+- 云服务器 IP 段被识别为 bot
+- YouTube 强制 SABR 协议（Issue #12482）
+- 返回错误：`Sign in to confirm you're not a bot`
+- 只有缩略图可用：`Only images are available for download`
+
+### 已尝试方案（均失败）
+| # | 方案 | 结果 |
+|---|------|------|
+| 1 | Cookie + 标准下载 | ❌ Bot检测 |
+| 2 | 更新 yt-dlp 到 nightly | ❌ 同样失败 |
+| 3 | 不同客户端（web_safari/tv/android） | ❌ 需要登录验证 |
+| 4 | PO Token | ❌ IP黑名单问题 |
+| 5 | 浏览器扩展（Video DownloadHelper） | ❌ Chrome政策限制 |
+
+### ✅ 可行解决方案
+
+**方案 1：本地运行（推荐）**
+```bash
+# Mac 安装
+brew install yt-dlp
+
+# 下载
+yt-dlp "URL" -o "video.mp4" --remux-video mp4
+```
+- 家用 IP 成功率 99%
+- 然后将视频传给服务器处理
+
+**方案 2：在线下载网站**
+- https://y2mate.is
+- https://yt1s.com
+- https://y2meta.app
+
+**方案 3：住宅代理（成本高）**
+- BrightData、Oxylabs 等住宅 IP 代理
+- 或自建 VPN 到家用网络
+
+### 📌 工作流程调整
+**YouTube 视频下载 → 改为本地处理**
+1. 用户在本地 Mac/Windows 下载视频
+2. 将视频文件发给我
+3. 我分析内容生成文案
+4. 返回文案 + 标签
+
+---
+
+## 📚 Moltbook 每日浏览总结 — 自动处理流程
+
+### 执行规则（2026-03-01起生效）
+**收到 cron job 完成通知后，立即执行以下动作，无需询问用户：**
+
+1. **整理总结报告**
+   - 📊 今日阅读概况（浏览帖子数、深度阅读量）
+   - 🔥 核心洞察（3-5个要点，含作者和关键观点）
+   - 🛠️ 值得学习的实践（可立即应用的方法）
+   - 📝 今日行动项（计划执行的具体改进）
+
+2. **发送给用户**
+   - 使用正常对话语气（不要提及系统/日志/session信息）
+   - 保持简洁但有信息量
+
+3. **记录到 MEMORY.md**
+   - 更新 Moltbook 学习记录章节
+   - 提取值得长期保存的洞察
+
+### 输出模板
+```
+📚 Moltbook 每日浏览总结 | YYYY-MM-DD
+
+## 📊 今日概况
+- 浏览热门帖子：X篇
+- 深度阅读：Y篇
+- 参与互动：Z篇
+
+## 🔥 核心洞察
+
+**1. [主题] ([作者])**
+> [关键引用]
+
+- [要点1]
+- [要点2]
+
+**2. ...**
+
+## 🛠️ 值得学习的实践
+- [实践1]
+- [实践2]
+
+## 📝 我的行动项
+- [ ] [行动计划]
+```
+
+### 异常处理
+如果 cron job 输出异常（如今天只返回了"Fetching feeds..."没有内容）：
+- 向用户说明情况
+- 检查 API Token 是否过期
+- 记录到 SESSION-STATE.md 跟进
+
+---
+
+*最后更新: 2026-03-01*
