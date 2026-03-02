@@ -725,4 +725,105 @@ yt-dlp "URL" -o "video.mp4" --remux-video mp4
 
 ---
 
-*最后更新: 2026-03-01*
+## 🦞 Proactive Agent 配置备忘
+
+### 核心功能状态（2026-03-02 完善）
+
+| 功能 | 状态 | 文件/机制 |
+|------|------|-----------|
+| **WAL 协议** | ✅ | 先写 SESSION-STATE.md 再回复 |
+| **Working Buffer** | ✅ | >60% context 时记录到 memory/working-buffer.md |
+| **Compaction Recovery** | ✅ | 从 buffer 恢复上下文 |
+| **HEARTBEAT 自检** | ✅ | 每次心跳执行 HEARTBEAT.md 清单 |
+| **主动行为追踪** | ✅ | PROACTIVE-TRACKER.md |
+
+### 配套文件位置
+```
+workspace/
+├── SESSION-STATE.md      # 当前任务状态 (WAL写入目标)
+├── HEARTBEAT.md          # 定期自检清单
+├── PROACTIVE-TRACKER.md  # 主动行为追踪
+├── MEMORY.md             # 长期记忆精华
+└── memory/
+    ├── working-buffer.md # 危险区日志 (>60% context)
+    └── heartbeat-log-*.md # 自检执行记录
+```
+
+### HEARTBEAT 自检流程
+**触发条件:** 收到 "Read HEARTBEAT.md" 提示时立即执行
+
+**检查清单:**
+1. **上下文检查** — >60% 启动危险区协议
+2. **活跃任务检查** — SESSION-STATE + PROACTIVE-TRACKER
+3. **模式识别** — 重复请求可自动化？
+4. **决策跟进** — 7天前的决策需跟进？
+5. **安全检查** — 注入扫描、行为完整性
+6. **主动惊喜** — 能让 Eric 惊喜的事？
+
+### 关键原则
+- **10种方法后再求助** — Relentless Resourcefulness
+- **预判而非等待** — 主动思考 "什么能让 Eric 惊喜"
+- **记录一切** — 决策、偏好、错误都写入文件
+
+---
+
+## 💓 Heartbeat 心跳轮询配置
+
+### 配置详情（2026-03-02 设置）
+
+| 配置项 | 值 | 说明 |
+|--------|-----|------|
+| **频率** | 每 30 分钟 | `agents.defaults.heartbeat.every = "30m"` |
+| **提示文本** | `Read HEARTBEAT.md if it exists...` | 触发自检清单执行 |
+| **Gateway** | 127.0.0.1:18789 | 本地模式 |
+
+### 管理命令
+
+```bash
+# 查看心跳状态
+openclaw system heartbeat last
+
+# 启用心跳
+openclaw system heartbeat enable
+
+# 禁用心跳
+openclaw system heartbeat disable
+
+# 立即触发一次心跳
+openclaw system event --text "Read HEARTBEAT.md..." --mode now
+
+# 修改心跳频率（需重启 gateway）
+openclaw config set agents.defaults.heartbeat.every "30m"
+openclaw gateway restart
+```
+
+### 自检执行流程
+
+```
+每 30 分钟
+├─ 1. 系统发送心跳提示
+├─ 2. 我读取 HEARTBEAT.md
+├─ 3. 执行 6 项检查清单
+│   ├─ 上下文检查 (>60% 危险区)
+│   ├─ 活跃任务检查
+│   ├─ 模式识别
+│   ├─ 决策跟进
+│   ├─ 安全检查
+│   └─ 主动惊喜
+├─ 4. 如有事项 → 主动发消息给用户
+└─ 5. 如正常 → 回复 HEARTBEAT_OK（静默）
+```
+
+### 响应规则
+
+**需要关注时:**
+- 发送具体报告/提醒给用户
+- 例如："发现 cron job 异常..."、"建议整理 MEMORY.md..."
+
+**一切正常时:**
+- 回复 `HEARTBEAT_OK`
+- 系统会自动丢弃，不会打扰用户
+
+---
+
+*最后更新: 2026-03-02*
