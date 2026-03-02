@@ -821,32 +821,37 @@ openclaw cron add \
 
 ## 💓 Heartbeat 心跳轮询配置
 
-### 配置详情（2026-03-02 设置）
+### 配置详情（2026-03-02 更新）
 
 | 配置项 | 值 | 说明 |
 |--------|-----|------|
-| **频率** | 每 30 分钟 | `agents.defaults.heartbeat.every = "30m"` |
-| **提示文本** | `Read HEARTBEAT.md if it exists...` | 触发自检清单执行 |
-| **Gateway** | 127.0.0.1:18789 | 本地模式 |
+| **频率** | **每 4 小时** | 北京时间 0:00/4:00/8:00/12:00/16:00/20:00 |
+| **执行方式** | **Cron Job 替代** | 原 `agents.defaults.heartbeat` 静默执行，改为 Cron Job 主动报告 |
+| **Job ID** | `e1f28f2c-979b-4bc3-875c-39145abafe23` | 每4小时执行，生成简洁报告 |
+| **历史配置** | ~~每 30 分钟~~ | ~~`a6d05054-5f3c-47f4-8ed9-d4c6ce40e9e5`~~ 已删除 |
 
 ### 管理命令
 
 ```bash
-# 查看心跳状态
-openclaw system heartbeat last
+# 查看 cron job 运行状态
+openclaw cron runs --id e1f28f2c-979b-4bc3-875c-39145abafe23
 
-# 启用心跳
-openclaw system heartbeat enable
+# 查看最近执行记录
+openclaw cron runs --id e1f28f2c-979b-4bc3-875c-39145abafe23 --limit 5
+```
 
-# 禁用心跳
-openclaw system heartbeat disable
+### 自检执行流程
 
-# 立即触发一次心跳
-openclaw system event --text "Read HEARTBEAT.md..." --mode now
-
-# 修改心跳频率（需重启 gateway）
-openclaw config set agents.defaults.heartbeat.every "30m"
-openclaw gateway restart
+```
+每 4 小时 (0:00/4:00/8:00/12:00/16:00/20:00)
+├─ 1. 检查 context 使用率（>60% 启动危险区协议）
+├─ 2. 检查 SESSION-STATE.md 活跃任务
+├─ 3. 检查 PROACTIVE-TRACKER.md 待办
+├─ 4. 模式识别（可自动化重复请求）
+├─ 5. 决策跟进（7天前决策检查）
+├─ 6. 安全检查（注入扫描、行为完整性）
+├─ 7. 主动惊喜想法
+└─ 8. 生成简洁报告发送给用户
 ```
 
 ### 自检执行流程
