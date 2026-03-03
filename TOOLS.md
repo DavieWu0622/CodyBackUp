@@ -821,29 +821,29 @@ openclaw cron add \
 
 ## 💓 Heartbeat 心跳轮询配置
 
-### 配置详情（2026-03-02 更新）
+### 配置详情（2026-03-03 更新）
 
 | 配置项 | 值 | 说明 |
 |--------|-----|------|
-| **频率** | **每 4 小时** | 北京时间 0:00/4:00/8:00/12:00/16:00/20:00 |
+| **频率** | **每 6 小时** | 北京时间 00:00/06:00/12:00/18:00 |
 | **执行方式** | **Cron Job 替代** | 原 `agents.defaults.heartbeat` 静默执行，改为 Cron Job 主动报告 |
-| **Job ID** | `e1f28f2c-979b-4bc3-875c-39145abafe23` | 每4小时执行，生成简洁报告 |
-| **历史配置** | ~~每 30 分钟~~ | ~~`a6d05054-5f3c-47f4-8ed9-d4c6ce40e9e5`~~ 已删除 |
+| **Job ID** | `6d7090e6-7dc1-4c9e-9bbe-69ce406ada52` | 每6小时执行，生成简洁报告 |
+| **历史配置** | ~~每 30 分钟~~ / ~~每 4 小时~~ | 已删除 |
 
 ### 管理命令
 
 ```bash
 # 查看 cron job 运行状态
-openclaw cron runs --id e1f28f2c-979b-4bc3-875c-39145abafe23
+openclaw cron runs --id 6d7090e6-7dc1-4c9e-9bbe-69ce406ada52
 
 # 查看最近执行记录
-openclaw cron runs --id e1f28f2c-979b-4bc3-875c-39145abafe23 --limit 5
+openclaw cron runs --id 6d7090e6-7dc1-4c9e-9bbe-69ce406ada52 --limit 5
 ```
 
 ### 自检执行流程
 
 ```
-每 4 小时 (0:00/4:00/8:00/12:00/16:00/20:00)
+每 6 小时 (00:00/06:00/12:00/18:00)
 ├─ 1. 检查 context 使用率（>60% 启动危险区协议）
 ├─ 2. 检查 SESSION-STATE.md 活跃任务
 ├─ 3. 检查 PROACTIVE-TRACKER.md 待办
