@@ -821,23 +821,27 @@ openclaw cron add \
 
 ## 💓 Heartbeat 心跳轮询配置
 
-### 配置详情（2026-03-03 更新）
+### 配置详情（2026-03-03 最终更新）
 
 | 配置项 | 值 | 说明 |
 |--------|-----|------|
 | **频率** | **每 6 小时** | 北京时间 00:00/06:00/12:00/18:00 |
 | **执行方式** | **Cron Job 替代** | 原 `agents.defaults.heartbeat` 静默执行，改为 Cron Job 主动报告 |
-| **Job ID** | `6d7090e6-7dc1-4c9e-9bbe-69ce406ada52` | 每6小时执行，生成简洁报告 |
-| **历史配置** | ~~每 30 分钟~~ / ~~每 4 小时~~ | 已删除 |
+| **Job ID** | `5994d9b0-644a-4518-91e9-f9312c0834d8` | 每6小时执行，生成简洁报告 |
+| **历史配置** | ~~每 30 分钟~~ / ~~每 4 小时~~ / ~~每 6 小时 (*/6)~~ | 全部已删除并重建 |
+| **清理原因** | 发现同时存在多个冲突配置，彻底清理后重建 | 使用明确的定点时间表达式 |
 
 ### 管理命令
 
 ```bash
 # 查看 cron job 运行状态
-openclaw cron runs --id 6d7090e6-7dc1-4c9e-9bbe-69ce406ada52
+openclaw cron runs --id 5994d9b0-644a-4518-91e9-f9312c0834d8
 
 # 查看最近执行记录
-openclaw cron runs --id 6d7090e6-7dc1-4c9e-9bbe-69ce406ada52 --limit 5
+openclaw cron runs --id 5994d9b0-644a-4518-91e9-f9312c0834d8 --limit 5
+
+# 查看所有相关 cron job（确保无冲突）
+openclaw cron list | grep -i "自检\|heartbeat"
 ```
 
 ### 自检执行流程
