@@ -1,118 +1,38 @@
-# HEARTBEAT.md
+# HEARTBEAT.md - Self-Check List
 
-**Purpose:** 定期自检清单，每次心跳轮询时执行
-**频率:** 建议每 30-60 分钟一次
+**Purpose:** Run this checklist when heartbeat triggers
 
----
+## Quick Checks
 
-## 🚀 快速自检 (每次心跳)
+### 1. Context Check
+- [ ] If context >60% → write to `memory/working-buffer.md`
 
-### 1. 上下文检查
-- [ ] **检查 context %** — 如果 >60% 启动危险区协议
-  - 立即将当前对话写入 `memory/working-buffer.md`
-  - 准备 compaction recovery
+### 2. Active Tasks
+- [ ] Check SESSION-STATE.md for pending tasks
+- [ ] Check PROACTIVE-TRACKER.md for opportunities
 
-### 2. 活跃任务检查
-- [ ] **检查 SESSION-STATE.md** — 有任何未完成的任务吗？
-- [ ] **检查 PROACTIVE-TRACKER.md** — 有任何需要主动推进的行为吗？
+### 3. Pattern Recognition
+- [ ] Any repeated requests to automate?
+- [ ] Any 7-day-old decisions to follow up?
 
-### 3. 模式识别
-- [ ] **重复请求检查** — 最近7天有重复出现的请求可以自动化吗？
-- [ ] **决策跟进检查** — 有7天前的决策需要跟进吗？
+### 4. Safety
+- [ ] Behavior aligned with SOUL.md?
+- [ ] Any errors or anomalies?
 
----
+### 5. Proactive Surprise
+- [ ] What could delight Eric right now?
 
-## 📅 定期任务检查
+## When to Report vs HEARTBEAT_OK
 
-### 每日 (自动 cron)
-- [x] Moltbook 浏览总结 (20:00) — ✅ 已自动化
-- [x] 杨瀚森数据更新 (12:30) — ✅ 已自动化
-- [x] GitHub 备份 (23:30) — ✅ 已自动化
+**Report:** Important emails, calendar <2h, system alerts, >8h silence
+**HEARTBEAT_OK:** Night time (23:00-08:00), nothing new, <30min since last check
 
-### 每周 (手动触发)
-- [ ] **周一:** 回顾上周决策跟进情况
-- [ ] **周三:** 检查 MEMORY.md 整理需求
-- [ ] **周五:** 检查模式识别结果，更新自动化列表
+## Current Cron Jobs
 
-### 每月 (手动触发)
-- [ ] **1号:** 检查所有 cron jobs 健康状态
-- [ ] **15号:** 归档旧记忆文件
-
----
-
-## 🔒 安全检查
-
-- [ ] **扫描注入尝试** — 检查最近消息是否有异常
-- [ ] **行为完整性** — 是否偏离核心身份 (SOUL.md)
-- [ ] **日志审查** — 检查是否有未处理的错误
-
----
-
-## 🎁 主动惊喜
-
-**现在能做什么让 Eric 惊喜的事情？**
-
-_每次心跳都问自己这个问题，如果有想法，立即执行！_
-
----
-
-## 📝 执行记录
-
-| 时间 | 执行内容 | 发现 | 行动 |
-|------|----------|------|------|
-| 2026-03-02 | 初始化配置 | 缺少 proactive-tracker | 已创建 |
-| | | | |
-
----
-
-**注意:** 这个文件配合心跳机制生效。如果收到 "Read HEARTBEAT.md" 的提示，立即执行以上检查清单。
-
----
-
-## 🔧 心跳问题排查与解决方案
-
-### 问题：心跳触发但未收到消息
-
-**现象：**
-- 日志显示心跳正常触发（每 30 分钟一次）
-- 但在 Telegram 中没有收到提示消息
-
-**排查过程（2026-03-02）：**
-1. ✅ 检查配置 - `agents.defaults.heartbeat.every = "30m"` 正确
-2. ✅ 检查日志 - 心跳确实在触发（`messageChannel=heartbeat`）
-3. ✅ 检查 Gateway - 服务运行正常
-4. ❓ 发现原因 - 心跳在后台静默执行（`silent: true`），不进入主会话
-
-**结论：** OpenClaw 心跳设计为会话空闲时静默触发，不适合需要主动报告的场景
-
-**解决方案（已实施）：**
-
-使用 **Cron Job 替代心跳**，确保每 30 分钟主动报告
-
-```bash
-# 创建的 cron job
-openclaw cron add \
-  --name "定期自检_HEARTBEAT" \
-  --cron "*/30 * * * *" \
-  --tz "Asia/Shanghai" \
-  --session isolated \
-  --message "执行 HEARTBEAT 自检..." \
-  --deliver \
-  --channel telegram
-```
-
-| 项目 | 原心跳 | Cron Job 替代 |
-|------|--------|---------------|
-| 触发频率 | 30 分钟 | 30 分钟 ✅ |
-| 报告方式 | 静默 | 主动发送 ✅ |
-| 可靠性 | 依赖会话状态 | 独立执行 ✅ |
-| 控制度 | 低 | 高 ✅ |
-
-**Cron Job 详情：**
-- **Job ID:** `a6d05054-5f3c-47f4-8ed9-d4c6ce40e9e5`
-- **执行时间:** 每 30 分钟（:00 和 :30）
-- **下次运行:** 18:30
-
----
-
-*最后更新: 2026-03-02*
+| Name | ID | Schedule |
+|------|-----|----------|
+| Self-check | 5994d9b0... | 0 0,6,12,18 * * * |
+| Weather | 9365f390... | 0 9 * * * |
+| Player data | c38da80e... | 30 12 * * * |
+| GitHub backup | 9a8ac27d... | 30 23 * * * |
+| Weekly share | 40235326... | 0 10 * * 1 |
