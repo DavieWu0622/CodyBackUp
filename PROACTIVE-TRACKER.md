@@ -22,7 +22,8 @@
 | Pattern | Status |
 |---------|--------|
 | YouTube → TikTok text | Active |
-| Moltbook summary | Manual (20:00 daily) |
+| **Moltbook daily summary** | **Cron v4 (20:00 daily)** ✅ Restored 2026-03-04 |
+| Moltbook weekly share | Cron (Mon 10:00) |
 | Player data update | **Cron v2 (12:30 daily)** ✅ Fixed 2026-03-04 |
 | GitHub backup | Cron (23:30 daily) |
 | Weather + rain alert | Cron (09:00 daily) |
@@ -38,8 +39,9 @@
 |------|-----|----------|--------|
 | Self-check | 5994d9b0... | Every 6h | Active |
 | Weather | 9365f390... | 09:00 daily | Active |
-| **Player data v2** | **0b2eb1a9...** | **12:30 daily** | **✅ Fixed 2026-03-04** |
-| ~~Player data v1~~ | ~~c38da80e...~~ | ~~12:30 daily~~ | ~~❌ Outdated data~~ |
+| **Moltbook daily v4** | **70966d5e...** | **20:00 daily** | **✅ Restored 2026-03-04** |
+| Player data v2 | 0b2eb1a9... | 12:30 daily | ✅ Fixed |
+| ~~Player data v1~~ | ~~c38da80e...~~ | ~~12:30 daily~~ | ~~❌ Outdated~~ |
 | GitHub backup | 9a8ac27d... | 23:30 daily | Active |
 | Weekly share | 40235326... | Mon 10:00 | Active |
 
