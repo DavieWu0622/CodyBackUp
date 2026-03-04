@@ -22,13 +22,14 @@
 ## Active Configs
 - Heartbeat: Every 6h (00:00/06:00/12:00/18:00)
 - Weather: Daily 09:00
-- Player data: Daily 12:30
+- **Player data: Daily 12:30** ✅ Fixed 2026-03-04 (was fetching outdated data)
 - GitHub backup: Daily 23:30
 
 ## Key Decisions
 - 2026-03-02: Authorized proactive surprises without asking
-- 2026-03-02: Switched to manual Moltbook summaries ( Telegram length limit)
+- 2026-03-02: Switched to manual Moltbook summaries (Telegram length limit)
 - 2026-03-03: Heartbeat finalized at 6h intervals
+- **2026-03-04: Fixed player data cron job** - Now correctly fetches latest matches from March 2026 (not October 2025)
 
 ---
 

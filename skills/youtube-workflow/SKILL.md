@@ -1,63 +1,80 @@
 ---
 name: youtube-workflow
-description: YouTube video analysis via Apify (configured). TikTok text generation + local download command.
+description: YouTube video download via yt-dlp + analysis. TikTok text generation.
 homepage: https://github.com/user/youtube-workflow
-metadata: {"clawdbot":{"emoji":"📹","requires":{"bins":["summarize"],"env":["APIFY_API_TOKEN"]},"primaryEnv":"APIFY_API_TOKEN"}}
-allowed-tools: Bash(summarize:*)
+metadata: {"clawdbot":{"emoji":"📹","requires":{"bins":["yt-dlp"],"optional":["summarize"]}}}
+allowed-tools: Bash(yt-dlp:*), Bash(summarize:*), Bash(ffprobe:*)
 ---
 
 # YouTube Workflow
 
-Analyze YouTube videos via Apify and generate TikTok-style text.
+Download and analyze YouTube videos using yt-dlp (no API needed).
 
 ## Quick Start
 
+### Option A: Download + Local Analysis (No API needed)
+```bash
+# 1. Download video
+yt-dlp "YOUTUBE_URL" -o "~/.openclaw/workspace/media/%(title)s_%(id)s.%(ext)s" --remux-video mp4
+
+# 2. Extract metadata
+yt-dlp "YOUTUBE_URL" --dump-json --skip-download | jq -r '.title, .uploader, .description'
+
+# 3. Extract audio for transcription
+ffmpeg -i "VIDEO_FILE" -vn -acodec mp3 /tmp/audio.mp3 -y
+```
+
+### Option B: Online Analysis (Requires API)
 ```bash
 summarize "YOUTUBE_URL" --youtube auto --length medium
 ```
 
-## Workflow
+## Workflow (Download + Analyze)
 
-### Step 1: Analyze YouTube Video
+### Step 1: Download YouTube Video
 ```bash
-summarize "https://youtube.com/watch?v=XXX" --youtube auto --length medium
+yt-dlp "https://youtube.com/watch?v=XXX" -o "~/.openclaw/workspace/media/%(title)s.%(ext)s" --remux-video mp4
 ```
 
-**Returns:**
-- 🎵 Song title + Artist
-- 📝 Lyrics theme/emotion
-- 🎬 Video scene
-- 🎸 Music style
+### Step 2: Extract Metadata
+```bash
+yt-dlp "YOUTUBE_URL" --dump-json --skip-download | jq -r '{title: .title, uploader: .uploader, duration: .duration_string, tags: .tags}'
+```
 
-### Step 2: Generate TikTok Text
+### Step 3: Generate TikTok Text
 
-**Template:**
+**Analysis Template:**
 ```
 📹 YouTube 视频分析
 
-🎵 歌曲信息
-• 标题: [Song Name]
-• 歌手: [Artist]
-• 风格: [Style]
-• 场景: [Scene]
-• 情感: [Emotion]
+🎵 视频信息（来自元数据）
+• 标题: [Title from yt-dlp]
+• 频道: [Uploader]
+• 时长: [Duration]
+• 标签: [Tags]
 
-📝 抖音文案
-[Song name][emoji] [Artist]这首太[adj]了！
+📝 内容分析
+基于视频元数据和描述的分析...
 
-[Scene description][emoji]
+🎵 如果是音乐视频
+• 歌曲推测: [Based on title/tags]
+• 风格推测: [Based on metadata]
+• 情感氛围: [Analysis]
+
+📝 抖音文案（如果适用）
+[Title][emoji] [Channel]这首太[adj]了！
+
+[Content description][emoji]
 [Emotion resonance]
 
-🎵 [Artist] - [Song info]
-@Channel source
-#[ArtistEN] #[Tag1] #[Tag2] #[Style] #[Scene]
+🎵 [Channel]
+@来源
+#[Tag1] #[Tag2] #[风格] #[场景]
 
-💻 本地下载命令（复制到终端执行）
+💻 下载命令（已执行）
 ```bash
 yt-dlp "YOUTUBE_URL" -o "%(title)s.%(ext)s" --remux-video mp4
 ```
-
-📋 在线下载备选: y2mate.is | yt1s.com | y2meta.app
 ```
 
 ## Tag Translation Rules
