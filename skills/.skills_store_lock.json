@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "summarize": {
+      "name": "Summarize",
+      "zip_url": "http://lb-3zbg86f6-0gwe3n7q8t4sv2za.clb.gz-tencentclb.com/api/v1/download?slug=summarize",
+      "source": "skillhub",
+      "version": "1.0.0"
+    },
+    "github": {
+      "name": "Github",
+      "zip_url": "http://lb-3zbg86f6-0gwe3n7q8t4sv2za.clb.gz-tencentclb.com/api/v1/download?slug=github",
+      "source": "skillhub",
+      "version": "1.0.0"
+    },
+    "tencentcloud-lighthouse-skill": {
+      "name": "Tencent Cloud Lighthouse",
+      "zip_url": "http://lb-3zbg86f6-0gwe3n7q8t4sv2za.clb.gz-tencentclb.com/api/v1/download?slug=tencentcloud-lighthouse-skill",
+      "source": "skillhub",
+      "version": "1.0.0"
+    }
+  }
+}

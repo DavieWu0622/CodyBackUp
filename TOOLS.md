@@ -237,16 +237,91 @@ git push origin master
 
 ## 视频处理（已配置 ✅）
 
-### 方案 1: 分析 YouTube 链接（推荐 ⭐）
+---
 
-发送 YouTube 链接，使用 `--youtube auto` 通过 Apify 分析：
+## 📹 YouTube-Workflow 工作流程
 
-**输出：**
-1. 📊 视频分析 - 歌曲、歌手、风格
-2. 📝 抖音文案 - 带 emoji 和标签
-3. 💻 本地下载命令 - 复制执行
+### 完整流程
 
-**优点：** 无需额外配置，直接使用
+| 步骤 | 操作 | 说明 |
+|------|------|------|
+| 1 | 用户发送 YouTube 链接 + 声明 `youtube-workflow` | 触发技能 |
+| 2 | 检查 yt-dlp 和 Deno 版本 | 确保工具最新 |
+| 3 | 尝试下载视频 | 若被拦截，索取 cookies |
+| 4 | 使用 cookies 下载 | **下载后立即删除 cookies** |
+| 5 | 生成内容 | 视频文件 + 抖音文案 + 5个标签 |
+| 6 | 发送给用户 | 视频文件 + 文案 |
+
+### 版本检查命令（每次执行）
+
+```bash
+# 检查 yt-dlp 版本
+yt-dlp --version
+
+# 检查 Deno 版本
+export PATH="$HOME/.deno/bin:$PATH" && deno --version
+
+# 更新 yt-dlp 到最新
+yt-dlp -U
+
+# 更新 Deno（如需要）
+deno upgrade
+```
+
+### 下载命令模板
+
+```bash
+# 设置环境变量
+export PATH="$HOME/.deno/bin:$PATH"
+
+# 下载视频（使用 cookies）
+yt-dlp "YOUTUBE_URL" \
+  -o "~/.openclaw/workspace/media/%(title)s_%(id)s.%(ext)s" \
+  --remux-video mp4 \
+  --cookies /tmp/youtube_cookies.txt \
+  --js-runtimes deno
+
+# 下载完成后删除 cookies
+rm /tmp/youtube_cookies.txt
+```
+
+### Cookies 导出方法
+
+1. Chrome 浏览器安装扩展 **"Get cookies.txt LOCALLY"**
+2. 打开 YouTube 视频页面
+3. 点击扩展，导出 `cookies.txt` 文件
+4. 发送 cookies 文件内容给 AI
+
+### 输出格式
+
+```
+📝 抖音文案
+[视频标题精华][emoji]
+
+[内容描述][emoji]
+[情感共鸣]
+
+🎵 [来源信息]
+
+#标签1 #标签2 #标签3 #标签4 #标签5
+```
+
+**标签规则**：5个标志性标签（人物+主题+风格+场景+泛标签）
+
+### 安全注意事项
+
+⚠️ **Cookies 处理**：
+- 仅用于临时下载
+- 下载完成后**立即删除**
+- 不要存储在持久化文件中
+- 不要在日志中暴露 cookies 内容
+
+### 文件保存位置
+
+- 视频文件：`~/.openclaw/workspace/media/`
+- 临时 cookies：`/tmp/youtube_cookies.txt`（下载后删除）
+
+---
 
 ### 方案 2: 分析视频文件
 
@@ -259,77 +334,12 @@ git push origin master
 | **Groq** ⭐ | 免费（1000分钟/月）| 超快 | https://console.groq.com |
 | OpenAI | 按量付费 | 快 | 用现有 OpenAI key |
 
-**配置后流程：**
-1. 你发送视频文件
-2. 我分析视频内容
-3. 返回抖音文案
-
-**如果未配置转录 API：**
-我会建议你使用 **YouTube 链接方案** 代替。
-
-### 示例输出
-
-```
-📹 YouTube 视频分析
-
-🎵 歌曲信息
-• 标题: 打上花火
-• 歌手: DAOKO × 米津玄師
-• 风格: 日系流行/动画原声
-• 情感: 治愈、夏日、遗憾
-
-📝 抖音文案
-打上花火🎆 DAOKO这首太治愈了！
-
-夏日祭的场景配上温柔的旋律🎐
-每次听都会想起那些未完成的故事
-
-🎵 DAOKO × 米津玄師 - 打上花火
-@音乐频道
-#DAOKO #米津玄师 #日系 #治愈 #动画
-
-💻 本地下载命令（复制执行）
-```bash
-yt-dlp "https://youtube.com/watch?v=VIDEO_ID" -o "%(title)s.%(ext)s" --remux-video mp4
-```
-```
-
-### 先决条件
-
-**本地下载需要安装 yt-dlp：**
-```bash
-# Mac
-brew install yt-dlp
-
-# 或 Python
-pip3 install yt-dlp
-```
+---
 
 ### 在线下载备选
 - https://y2mate.is
 - https://yt1s.com
 - https://y2meta.app
-
-### 配置
-```bash
-source .env  # 从环境变量文件加载
-export APIFY_API_TOKEN=$APIFY_API_TOKEN
-```
-
-### 抖音文案模板
-```
-[日文/英文歌名][emoji] [歌手名]这首太[形容词]了！
-
-[现场感受描述][emoji]
-[情感共鸣描述]
-
-🎵 [歌手名] - [歌曲信息]
-
-@频道名 的来源
-#[歌手英文名] #[中文标签] #[风格] #[场景]
-```
-
-**标签规则**：5个标签（歌手+语言+风格+场景+泛标签），日文翻译为英文或中文
 
 ---
 
