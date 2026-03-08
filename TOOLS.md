@@ -268,22 +268,167 @@ yt-dlp -U
 deno upgrade
 ```
 
-### 下载命令模板
+### 下载命令模板（Robust 版）
 
 ```bash
 # 设置环境变量
 export PATH="$HOME/.deno/bin:$PATH"
 
-# 下载视频（使用 cookies）
+# 下载视频（Robust 配置）
+# 包含：impersonate 浏览器、重试机制、更好的格式选择
 yt-dlp "YOUTUBE_URL" \
   -o "~/.openclaw/workspace/media/%(title)s_%(id)s.%(ext)s" \
   --remux-video mp4 \
   --cookies /tmp/youtube_cookies.txt \
-  --js-runtimes deno
+  --js-runtimes deno \
+  --impersonate chrome \
+  -R 10 --fragment-retries 10 \
+  --no-check-certificates \
+  --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+# 查看可用格式（调试用）
+yt-dlp -F "YOUTUBE_URL" --cookies /tmp/youtube_cookies.txt
 
 # 下载完成后删除 cookies
 rm /tmp/youtube_cookies.txt
 ```
+
+### 参数说明
+
+| 参数 | 作用 |
+|------|------|
+| `--impersonate chrome` | 模拟 Chrome 浏览器请求，减少检测 |
+| `-R 10` | 最多重试 10 次 |
+| `--fragment-retries 10` | 分片下载失败重试 10 次 |
+| `--no-check-certificates` | 跳过 SSL 证书检查 |
+| `--user-agent` | 强制使用 Chrome UA |
+| `-S res:1080,br:5000` | 优先选择 1080p+ 高码率 |
+
+### iOS 兼容性问题
+
+**问题**：YouTube 默认 VP9 编码在 iOS 上可能播放异常
+**解决**：使用 `--merge-output-format mp4` 合并后，再转码为 H.264
+
+```bash
+# iOS 兼容版本（下载后需要转码）
+ffmpeg -y -i "input.mp4" -c:v libx264 -profile:v high -level 4.1 -c:a aac -b:a 128k -movflags +faststart "output.mp4"
+```
+
+> ⚠️ 视频文件超过 16MB 会被 Telegram 压缩，需要降低码率：` -crf 26 -b:a 96k`
+
+---
+
+## 🎬 YouTube 视频下载完整工作流（2026-03-08 实测）
+
+### 问题背景
+- YouTube Shorts 默认 VP9 编码 + WebM 容器
+- iOS/Telegram 播放器对 VP9 支持不完整 → 视频卡在第一帧
+- Telegram 传输限制：16MB，超过会被压缩
+
+### 完整解决方案
+
+**Step 1：下载视频（使用 Cookie + deno）**
+```bash
+export PATH="$HOME/.deno/bin:$PATH"
+yt-dlp "YOUTUBE_URL" \
+  -o "~/.openclaw/workspace/media/%(title)s_%(id)s.%(ext)s" \
+  --remux-video mp4 \
+  --cookies /tmp/youtube_cookies.txt \
+  --js-runtimes deno \
+  -R 10 --fragment-retries 10
+rm /tmp/youtube_cookies.txt  # 清理 Cookie
+```
+
+**Step 2：转码为 iOS 兼容格式（H.264+AAC）**
+```bash
+cd ~/.openclaw/workspace/media
+ffmpeg -y -i "input.mp4" \
+  -c:v libx264 -profile:v high -level 4.1 \
+  -c:a aac -b:a 96k \
+  -movflags +faststart \
+  -preset faster -crf 26 \
+  "output_ios.mp4"
+```
+
+**Step 3：检查参数**
+```bash
+ffmpeg -i "output_ios.mp4" 2>&1 | grep -E "Video:|DAR|SAR"
+# 期望看到：1080x1920 [SAR 1:1 DAR 9:16] (竖屏)
+# 或 1920x1080 [SAR 1:1 DAR 16:9] (横屏)
+```
+
+**Step 4：发送（注意大小限制）**
+- Telegram 限制 16MB
+- 超过需要降低码率或分辨率
+
+**Step 5：手机播放**
+- 从 Telegram 保存到相册 → 用**照片应用**播放（不是 Telegram 内置播放器）
+- Telegram 播放器可能显示异常，但视频本身是正常的
+
+### 关键参数说明
+
+| 参数 | 作用 |
+|------|------|
+| `--remux-video mp4` | 合并为 MP4 容器 |
+| `-c:v libx264` | 转码为 H.264（iOS 兼容） |
+| `-profile:v high` | 高质量编码配置 |
+| `-movflags +faststart` | 优化流媒体播放 |
+| `-crf 26` | 压缩率（越大文件越小） |
+| `-b:a 96k` | 音频码率 |
+
+### 已知问题
+
+1. **Telegram 播放器显示 1:1** → 视频本身正常，保存相册后播放正常
+2. **VP9 卡在第一帧** → 必须转 H.264
+3. **视频超过 16MB** → Telegram 压缩，需要降码率
+
+---
+
+## 📝 抖音文案模板样例（2026-03-08 实测）
+
+### Aimyon - いっせーのーで！ 「ノット・オーケー」
+
+**文案**：
+```
+"一二三，假装一切都好"
+明明已经很努力了，却还是说不出那句"我很好"
+这就是Aimyon啊，听完只想安静地EMO🎧
+```
+
+**Tag**：
+```
+#Aimyon #爱缪 #日语歌 #J-Pop #音乐现场
+```
+
+### 模板结构
+
+**歌曲名称**：中文/日文/英文
+**演唱者**：歌手名
+
+**文案格式**：
+- 第1行：歌词/歌词翻译/金句引用
+- 第2行：情感表达/听歌感受
+- 第3行：歌手/歌曲风格总结
+
+**Tag 组合**：
+1. 歌手英文名/中文名
+2. 语种/语言
+3. 歌曲类型（风格）
+4. 内容类型（现场/Live/翻唱等）
+5. 平台热门标签
+
+### 注意事项
+- 日文歌建议：同时提供日文翻译+英文/中文Tag
+- 避免同质化：根据歌曲真实内容创作，不要套用固定模板
+- 了解歌曲背景：可通过搜索获取歌曲表达的情绪/主题
+
+---
+
+## 📎 完整工作流文档
+
+详见：`~/.openclaw/workspace/docs/youtube-download-workflow.md`
+
+包含从下载到文案输出的每一步详细操作指南
 
 ### Cookies 导出方法
 
