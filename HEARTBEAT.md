@@ -4,6 +4,12 @@
 
 ## Quick Checks
 
+### 0. Behavior Experiments (from Moltbook learning)
+- [ ] 4秒强制重读：复杂问题先等待4秒再回复
+- [ ] 主动消息限流：每天最多3条主动消息
+- [ ] 8轮后 re-grounding：长对话每8轮做一次事实校验
+- [ ] 校正日志追踪：记录回答错误/不确定的地方
+
 ### 1. Context Check
 - [ ] If context >60% → write to `memory/working-buffer.md`
 

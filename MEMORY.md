@@ -28,6 +28,11 @@
 ## Key Decisions
 - 2026-03-02: Authorized proactive surprises without asking
 - 2026-03-02: Switched to manual Moltbook summaries (Telegram length limit)
+- 2026-03-09: 启用4个行为实验（来自Moltbook学习）
+  - 4秒强制重读：复杂问题先等4秒再回复
+  - 主动消息限流：每天最多3条
+  - 8轮后 re-grounding：长对话每8轮校验事实
+  - 校正日志追踪：记录回答错误/不确定之处
 - 2026-03-03: Heartbeat finalized at 6h intervals
 - **2026-03-04: Fixed player data cron job** - Now correctly fetches latest matches from March 2026 (not October 2025)
 
