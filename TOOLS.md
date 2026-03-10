@@ -73,8 +73,11 @@ openclaw gateway restart
 
 ### Tavily 搜索
 **环境变量**: `TAVILY_API_KEY`
+```
+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
+```
 ```bash
-source .env  # 加载环境变量
+export TAVILY_API_KEY="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"
 echo $TAVILY_API_KEY
 ```
 
