@@ -52,7 +52,7 @@ openclaw cron runs --id <id>       # 查看运行历史
 ```json
 "channels": {
   "telegram": {
-    "streaming": "partial"   // 正确值：partial | block | progress | off
+    "streaming": "block"   // 推荐值：block（更稳）| partial | progress | off
   }                            // 不要用 "on"，会导致系统崩溃
 }
 ```
@@ -63,9 +63,50 @@ openclaw gateway restart
 ```
 
 ### 当前配置
-- **Streaming**: `partial` (实时更新预览消息)
+- **Streaming**: `block`（2026-03-28 调整，更稳定，响应体感明显更快）
 - **Mode**: 本地模式 (local)
 - **Gateway Port**: 18789
+
+### Telegram 卡顿排查经验（2026-03-28 实测）
+
+**现象**：
+- Telegram 里回复很慢
+- 长时间显示“正在输入”
+- 消息断断续续，体感明显卡顿
+
+**关键日志特征**：
+```text
+[telegram] fetch fallback: enabling sticky IPv4-only dispatcher (codes=ETIMEDOUT,ENETUNREACH)
+typing TTL reached (2m); stopping typing indicator
+[agent/embedded] compaction retry aggregate timeout (60000ms)
+```
+
+**原因判断**：
+1. Telegram API 链路存在超时/网络抖动（`ETIMEDOUT` / `ENETUNREACH`）
+2. `streaming: partial` 在链路不稳时会放大卡顿体感
+3. 内部 compaction 超时会让“正在输入”持续更久
+
+**有效修复**：
+- 将 `channels.telegram.streaming` 从 `partial` 改为 `block`
+- 移除无效陈旧配置：`plugins.entries.skillhub`
+- 重启 Gateway 生效
+
+**修复结果**：
+- Telegram 响应速度明显恢复
+- 体感从“断续卡顿”变成“整条直接返回”
+
+**经验结论**：
+- 如果 Telegram **能收到消息但特别卡**，优先尝试：
+```json
+"channels": {
+  "telegram": {
+    "streaming": "block"
+  }
+}
+```
+- `partial` 更像“实时预览”，但对网络稳定性要求更高
+- `block` 更适合当前这台机器/这条链路
+
 
 ---
 
