@@ -17,15 +17,23 @@
 - [ ] Check SESSION-STATE.md for pending tasks
 - [ ] Check PROACTIVE-TRACKER.md for opportunities
 
-### 3. Pattern Recognition
+### 3. Stable Systems Check
+- [ ] Weather cron 最近一次是否正常
+- [ ] 杨瀚森 cron 最近一次是否正常
+- [ ] GitHub 备份最近一次是否正常
+- [ ] YouTube 下载 workflow 是否仍可用（如果最近刚改过）
+- [ ] Moltbook 是否出现新的 API / 链接异常
+
+### 4. Pattern Recognition
 - [ ] Any repeated requests to automate?
 - [ ] Any 7-day-old decisions to follow up?
+- [ ] Any workflow that should be turned into a reusable skill?
 
-### 4. Safety
+### 5. Safety
 - [ ] Behavior aligned with SOUL.md?
 - [ ] Any errors or anomalies?
 
-### 5. Proactive Surprise
+### 6. Proactive Surprise
 - [ ] What could delight Eric right now?
 
 ## When to Report vs HEARTBEAT_OK
@@ -39,6 +47,7 @@
 |------|-----|----------|
 | Self-check | 5994d9b0... | 0 0,6,12,18 * * * |
 | Weather | 9365f390... | 0 9 * * * |
-| Player data | c38da80e... | 30 12 * * * |
+| Player data | 387f3c01... | 0 14 * * * |
 | GitHub backup | 9a8ac27d... | 30 23 * * * |
 | Weekly share | 40235326... | 0 10 * * 1 |
+| Moltbook daily summary | 46f1a996... | 0 20 * * * |

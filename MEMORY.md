@@ -22,8 +22,15 @@
 ## Active Configs
 - Heartbeat: Every 6h (00:00/06:00/12:00/18:00)
 - Weather: Daily 09:00
-- **Player data: Daily 12:30** ✅ Fixed 2026-03-04 (was fetching outdated data)
+- **Player data: Daily 14:00** ✅ Optimized with multi-source verification
 - GitHub backup: Daily 23:30
+
+## Stable Workflows
+- **Accounting skill**: Local personal bookkeeping skill is usable; supports SQLite storage, conversational accounting, monthly budget alerts, stats, SVG charts, monthly report, and CSV export.
+- **YouTube skill v2**: `yt-dlp-downloader` workflow has been restructured; supports direct → impersonate → cookies fallback, cookies auto-normalization, iPhone/Telegram transcoding, and short-video caption generation.
+- **Moltbook workflow**: API-level posting is usable (`create` / `verify` / `detail` confirmed), but web permalink/public visibility is not reliably confirmable yet.
+- **Yang Hansen cron**: Optimized to prioritize today’s conclusion, split NBA vs G League, apply source prioritization/fallbacks, and include jump links.
+- **Weather cron**: Optimized for morning readability — lead with “going-out takeaway”, then key weather info and practical advice.
 
 ## Key Decisions
 - 2026-03-02: Authorized proactive surprises without asking
@@ -36,6 +43,9 @@
 - 2026-03-03: Heartbeat finalized at 6h intervals
 - **2026-03-04: Fixed player data cron job** - Now correctly fetches latest matches from March 2026 (not October 2025)
 - 2026-03-10: GitHub备份已恢复（问题已解决）
+- 2026-03-28: 用户要求重新加载人格与底层文件；主会话重新对齐 `AGENTS.md` / `SOUL.md` / `USER.md` / `MEMORY.md` 作为协作基线。
+- 2026-03-28: Moltbook should only be treated as **API-level publishable** for now; do not equate verify success with confirmed public web permalink.
+- 2026-03-28: YouTube download workflow successfully closed the loop with cookies normalization + impersonation + Telegram-compatible output.
 
 ---
 

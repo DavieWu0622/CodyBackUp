@@ -1,5 +1,26 @@
 # TOOLS.md - Local Notes
 
+## 当前稳定能力索引（建议优先看这里）
+
+### Stable Skills / Workflows
+- **记账 Skill**：本地个人记账已可用，支持 SQLite、预算、月报、SVG 图表。
+- **YouTube 下载 Skill v2**：已打通 direct → impersonate → cookies fallback，支持 cookies 自动标准化、iPhone/Telegram 转码与抖音文案衔接。
+- **Moltbook**：当前仅能确认 **API 级发布成功**，Web 公共链接不可稳定确认。
+- **杨瀚森 cron**：已优化为“先结论、后数据、再跳转入口”，区分 NBA / G 联赛。
+- **天气 cron**：已优化为“先出门重点、再天气数据、再穿衣/出门建议”。
+
+### Known Issues
+- **Moltbook Web permalink 未闭环**：`/api/v1/posts?...` 当前整体 500，不能假设 `/p/<id>` 或 `/posts/<id>`。
+- **部分 YouTube Shorts 需 cookies**：即使 impersonation 可用，也可能仍需登录态 cookies。
+- **browser tool / Chrome 集成**：历史上存在 CDP/启动不稳定问题，命令行 Chrome 方案更可靠。
+
+### Validation Notes
+- **已实测成功**：记账 skill、YouTube 下载/转码/发送、cookies 标准化、抖音文案生成。
+- **已完成规则收口**：Moltbook workflow、杨瀚森 cron、天气 cron。
+- **仍需看长期运行效果**：cron 的真实日常输出质量与稳定性。
+
+---
+
 ## 核心配置
 
 ### 文件路径
@@ -154,6 +175,19 @@ https://www.moltbook.com/api/v1
 Authorization: Bearer moltbook_sk_qHbt6IyQy2Qm3q1txh6zU-u3DniUQGMh
 ```
 
+### Moltbook API 排障结论（2026-03-28）
+- `POST /api/v1/posts`：正常
+- `POST /api/v1/verify`：正常
+- `GET /api/v1/posts/<id>`：正常，可确认 `verification_status=verified`
+- `GET /api/v1/posts?...`（列表查询）：当前整体返回 `500 Internal Server Error`
+- `https://www.moltbook.com/p/<id>` / `https://www.moltbook.com/posts/<id>`：不能假设为真实公开链接，当前实测为 404
+
+**当前结论**：
+- Moltbook 当前可确认 **API 级发布成功**，但 **Web 公共链接不可稳定确认**
+- 不能再把“verify 成功”直接等同于“网页公开可访问成功”
+- 后续 workflow / cron 汇报应包含：`post_id`、`verification_status`、`detail API 是否可读`
+- 若 API 未返回 permalink / slug / canonical URL，则必须明确写：`Web 公共链接暂未确认（平台列表接口异常）`
+
 **账户信息**：
 - **Agent ID**: `5559dfad-cbdb-4c7f-9145-6c151906696c`
 - **Agent 名称**: `codythebot`
@@ -213,11 +247,43 @@ agent-browser close
 
 | 名称 | Job ID | 时间 | 说明 |
 |------|--------|------|------|
-| 深圳天气预报 | `b5925e41-c56f-41ca-80bc-686b6b81af4c3d` | 每天 9:00 | Open-Meteo API |
-| 杨瀚森数据更新 | `c38da80e-103a-4311-9220-13d36717f968` | 每天 12:30 | 虎扑NBA抓取 |
-| Moltbook浏览总结 | `05e8c70b-af53-4987-be23-4fd0fccaa2b5` | 每天 20:00 | 分段发送 |
+| 深圳天气预报 | `9365f390-1f70-486c-b069-8d1ca81261e8` | 每天 9:00 | 早上出门重点优先的天气提醒 |
+| 杨瀚森每日数据 | `387f3c01-38e4-4473-9f36-aeb73cf577e6` | 每天 14:00 | 先结论、后数据、带跳转入口 |
+| Moltbook每日浏览总结_v5 | `46f1a996-40f5-4007-b269-ebb7aa4b84d5` | 每天 20:00 | API级发布成功校验，不再假设公开链接 |
 | 定期自检 | `5994d9b0-644a-4518-91e9-f9312c0834d8` | 每6小时 | HEARTBEAT自检 |
 | GitHub备份 | `9a8ac27d-2149-40f4-af98-9e659ffa968e` | 每天 23:30 | 自动提交推送 |
+
+### Cron → Telegram Announce 最小模板与排障（2026-03-29 验证）
+
+- 最小可用交付（显式绑定 outbound 账号 + 裸 chatId）
+```bash
+openclaw cron edit "<jobId>" \
+  --channel telegram \
+  --account default \
+  --to "5856737445"
+```
+- 极简探针（验证 announce 出站链路，不依赖业务文案）
+```bash
+openclaw cron add \
+  --name "Announce Test" \
+  --every "30s" \
+  --session isolated \
+  --message "Ping from cron announce test" \
+  --announce \
+  --channel telegram \
+  --account default \
+  --to "5856737445" \
+  --delete-after-run
+```
+- 若直发成功但 announce 失败：优先显式 `--account default`；必要时重启 gateway 刷新出站注册：
+```bash
+openclaw message send --channel telegram --account default --target "5856737445" --message "Outbound probe"
+openclaw gateway restart
+```
+- 模型回退告警不应阻断投递；为稳妥可锁定为常用稳定模型：
+```bash
+openclaw cron edit "<jobId>" --model "<your-stable-model>"
+```
 
 ---
 
@@ -261,6 +327,56 @@ agent-browser close
 
 ---
 
+## YouTube 下载 Skill（2026-03-28 v2）
+
+### 路径
+- **Skill**: `/root/.openclaw/workspace/skills/yt-dlp-downloader/`
+- **统一入口**: `/root/.openclaw/workspace/skills/yt-dlp-downloader/scripts/run.sh`
+- **文档**: `/root/.openclaw/workspace/docs/youtube-download-workflow.md`
+
+### 核心脚本
+- `download.sh`：direct → deno+impersonate → cookies fallback
+- `transcode_ios.sh`：H.264 + AAC 转码
+- `compress_telegram.sh`：压缩到更适合 Telegram 发送
+- `cleanup.sh`：清理 cookies / 临时文件
+- `run.sh`：统一入口，按目标模式自动调度
+
+### 推荐入口
+```bash
+# 普通下载
+bash /root/.openclaw/workspace/skills/yt-dlp-downloader/scripts/run.sh "YOUTUBE_URL" download
+
+# 提取音频
+bash /root/.openclaw/workspace/skills/yt-dlp-downloader/scripts/run.sh "YOUTUBE_URL" audio
+
+# 转 iPhone 兼容
+bash /root/.openclaw/workspace/skills/yt-dlp-downloader/scripts/run.sh "YOUTUBE_URL" ios
+
+# Telegram 模式（下载→转码→压缩）
+bash /root/.openclaw/workspace/skills/yt-dlp-downloader/scripts/run.sh "YOUTUBE_URL" telegram
+```
+
+### 设计原则
+- 默认先简单下载
+- 失败再升级，不默认索要 cookies
+- 下载 / 转码 / 压缩分层，不强绑文案生成
+- 统一入口，减少长命令心智负担
+
+### 已验证链路（2026-03-28）
+- `direct`：部分 Shorts 会被 YouTube 风控拦截
+- `deno + impersonate`：在安装 `curl-cffi` 后已可用
+- `cookies + impersonate`：已用真实 Shorts 实测成功
+- `normalize_cookies.py`：可把用户发来的可读 cookies 文本自动转成 Netscape 格式
+- `telegram` 模式：已成功生成并发送 7.8MB 的 iPhone/Telegram 兼容版本
+
+### 当前结论
+- YouTube skill 已从“难用工作流”升级为“可复用 workflow skill”
+- 默认策略：先 direct，再 impersonate，最后 cookies
+- 当 cookies 不是标准 Netscape 格式时，先自动标准化再下载
+- 当前已能支持：下载、转码、压缩、发送、生成抖音文案
+
+---
+
 ## GitHub 备份
 
 ### 仓库信息
@@ -276,6 +392,55 @@ git add .
 git commit -m "描述更改"
 git push origin master
 ```
+
+---
+
+## 记账 Skill（2026-03-28）
+
+### 路径
+- **Skill**: `/root/.openclaw/workspace/skills/accounting/`
+- **主脚本**: `/root/.openclaw/workspace/skills/accounting/scripts/accounting.py`
+- **数据库**: `~/.openclaw/accounting.db`
+- **预算文件**: `~/.openclaw/accounting_budget.json`
+- **CSV 导出**: `~/.openclaw/accounting_export.csv`
+- **图表目录**: `~/.openclaw/accounting_charts/`
+
+### 当前能力
+- 对话式记账：`parse "今天午饭花了38元"`
+- 一句话多笔：`parse "中午吃饭32，晚上打车24"`
+- 支出/收入手动录入
+- 月预算提醒（80% 预警 / 100% 超支）
+- 本月 / 上月 / 今年统计
+- ASCII 图表
+- SVG 饼图 / 柱状图
+- 月报文本输出
+- CSV 导出
+
+### 常用命令
+```bash
+# 对话式记账
+python3 /root/.openclaw/workspace/skills/accounting/scripts/accounting.py parse "今天午饭花了38元"
+python3 /root/.openclaw/workspace/skills/accounting/scripts/accounting.py parse "工资收入12000，奖金500"
+
+# 预算
+python3 /root/.openclaw/workspace/skills/accounting/scripts/accounting.py budget 餐饮 2000
+python3 /root/.openclaw/workspace/skills/accounting/scripts/accounting.py budgets
+
+# 统计 / 图表 / 月报
+python3 /root/.openclaw/workspace/skills/accounting/scripts/accounting.py stats 本月
+python3 /root/.openclaw/workspace/skills/accounting/scripts/accounting.py chart 本月
+python3 /root/.openclaw/workspace/skills/accounting/scripts/accounting.py pie 本月
+python3 /root/.openclaw/workspace/skills/accounting/scripts/accounting.py bar 本月
+python3 /root/.openclaw/workspace/skills/accounting/scripts/accounting.py report 本月
+
+# 导出
+python3 /root/.openclaw/workspace/skills/accounting/scripts/accounting.py export
+```
+
+### 封装状态
+- `SKILL.md` 已补全 frontmatter
+- 已通过 `skill-creator` 的 `quick_validate.py`
+- 当前属于单用户本地版，后续可扩展账户/标签/Telegram 对话直连
 
 ---
 
